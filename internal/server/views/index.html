@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+        <title>Migrations status</title>
+    </head>
+    <body>
+        <main>
+            <h1>Migrations status</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Version number</th>
+                        <th>Dirty?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .}}
+                    <tr>
+                        <td>{{.Version}}</td>
+                        <td>{{.Dirty}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </main>
+        <footer>
+            Kubernetes + CloudNativePG + Postgresql = &hearts;
+        </footer>
+    </body>
+</html>
