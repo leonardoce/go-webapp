@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webapp
+  name: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      initContainers:
+      - name: migrate
+        image: ko://github.com/leonardoce/go-webapp
+        imagePullPolicy: Always
+        args:
+         - migrate
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-app
+              key: password
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: pg-app
+              key: user
+        - name: PGHOST
+          valueFrom:
+            secretKeyRef:
+              name: pg-app
+              key: host
+      containers:
+      - image: ghcr.io/leonardoce/go-webapp:latest
+        imagePullPolicy: Always
+        name: run
+        args:
+          - serve
+          - -l
+          - :8000
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pg-app
+              key: password
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: pg-app
+              key: user
+        - name: PGHOST
+          valueFrom:
+            secretKeyRef:
+              name: pg-app
+              key: host

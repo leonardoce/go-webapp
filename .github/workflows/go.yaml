@@ -5,15 +5,46 @@ permissions:
   packages: write
 
 jobs:
-  build:
+  build-image:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.23.x'
-      - uses: ko-build/setup-ko@v0.6
-      - run: ko build --bare
+
+      - name: Setup ko
+        uses: ko-build/setup-ko@v0.6
+
+      - name: Build and push image
+        run: ko build --bare
+
+  test-k8s:
+    runs-on: ubuntu-latest
+    needs: build-image
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup ko
+        uses: ko-build/setup-ko@v0.6
+
+      - name: Setup a KinD cluster
+        uses: helm/kind-action@v1
+
+      - name: Install CloudNativePG
+        run: kubectl apply --server-side -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.24/releases/cnpg-1.24.1.yaml
+
+      - name: Wait for CloudNativePG to be up and running
+        run: kubectl rollout status -n cnpg-system deployment cnpg-controller-manager
+
+      - name: Deploy application in Kubernetes
+        run: ko apply --bare -f k8s
+
+      - name: Wait for the application to be ready
+        run: kubectl rollout status deployment webapp --timeout=5m --watch=true
