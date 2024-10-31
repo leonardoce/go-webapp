@@ -65,7 +65,9 @@ func Migrate(ctx context.Context) error {
 	}
 
 	if err := m.Up(); err != nil {
-		return fmt.Errorf("while executing migrations: %w", err)
+		if err != migrate.ErrNoChange {
+			return fmt.Errorf("while executing migrations: %w", err)
+		}
 	}
 
 	return nil
