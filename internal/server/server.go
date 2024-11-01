@@ -48,6 +48,7 @@ func New(ctx context.Context) (*Data, error) {
 	}
 
 	mux.HandleFunc("/", result.indexPage)
+	mux.HandleFunc("/readyz", result.readinessProbe)
 	return result, nil
 }
 
@@ -123,4 +124,22 @@ func (d *Data) indexPage(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
+}
+
+func (d *Data) readinessProbe(w http.ResponseWriter, r *http.Request) {
+	tx, err := d.pool.Begin(r.Context())
+	if err != nil {
+		log.Println("Error connecting to the database", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	defer func() {
+		err := tx.Rollback(r.Context())
+		if err != nil {
+			log.Println("Error while rolling back the transaction", err)
+		}
+	}()
+
+	w.Write([]byte("ok"))
 }

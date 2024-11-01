@@ -61,3 +61,7 @@ spec:
             secretKeyRef:
               name: pg-app
               key: host
+        readinessProbe:
+          httpGet:
+            path: "/readyz"
+            port: 8000

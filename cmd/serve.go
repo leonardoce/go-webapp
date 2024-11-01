@@ -4,6 +4,12 @@ Copyright © 2024 Leonardo Cecchi
 package cmd
 
 import (
+	"context"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/leonardoce/go-webapp/internal/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,7 +25,20 @@ var serveCmd = &cobra.Command{
 			return err
 		}
 
-		if err := s.Start(cmd.Context()); err != nil {
+		// Handle SIGTERM and SIGINT by terminating the context
+		serverContext, cancel := context.WithCancel(cmd.Context())
+		defer cancel()
+
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+		go func() {
+			sig := <-sigs
+			log.Printf("Received %s: terminating\n", sig)
+			cancel()
+		}()
+
+		if err := s.Start(serverContext); err != nil {
 			return err
 		}
 
