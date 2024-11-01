@@ -23,7 +23,7 @@ jobs:
       - name: Build and push image
         run: ko build --bare
 
-  test-k8s:
+  test-on-k8s:
     runs-on: ubuntu-latest
     needs: build-image
 
@@ -36,6 +36,8 @@ jobs:
 
       - name: Setup a KinD cluster
         uses: helm/kind-action@v1
+        with:
+          node_image: kindest/node:v1.31.1
 
       - name: Install CloudNativePG
         run: kubectl apply --server-side -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.24/releases/cnpg-1.24.1.yaml
