@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-generator
+spec:
+  template:
+    spec:
+      containers:
+      - name: apache-benchmark
+        image: httpd
+        command:
+         - "/usr/local/apache2/bin/ab"
+         - "-t"
+         - "120"
+         - "-c"
+         - "5"
+         - "-n"
+         - "100000000"
+         - "http://webapp:8000/test"
+      restartPolicy: Never
