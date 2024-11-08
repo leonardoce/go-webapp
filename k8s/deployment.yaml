@@ -18,7 +18,6 @@ spec:
       initContainers:
       - name: migrate
         image: ko://github.com/leonardoce/go-webapp
-        imagePullPolicy: Always
         args:
          - migrate
         env:
@@ -38,8 +37,7 @@ spec:
               name: pg-app
               key: host
       containers:
-      - image: ghcr.io/leonardoce/go-webapp:latest
-        imagePullPolicy: Always
+      - image: ko://github.com/leonardoce/go-webapp
         name: run
         args:
           - serve
